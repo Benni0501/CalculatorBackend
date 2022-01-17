@@ -4,20 +4,33 @@
         <!--Import von Jquery-->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script>
-            setInterval(function() { 
-                // alle 100 Millisekunden Status vom Server abrufen
-                getSwitchStatus(); 
-            }, 100);
 
             // Funktion für POST-Request
-            function sendSwitchStatus(button){
-                var url = "http://127.0.0.1:3001/setProperty";
+            function calculate(){
+                var choose = document.getElementById("choose");
+                var valueOne = document.getElementById("valueOne");
+                var valueTwo = document.getElementById("valueTwo");
+                var value = choose.options[choose.selectedIndex].value;
+                switch(value){
+                    case "addition":
+                        var url = "http://127.0.0.1:3001/addition";
+                        break;
+                    case "subtraktion":
+                        var url = "http://127.0.0.1:3001/subtraktion";
+                        break;
+                    case "multiplikation":
+                        var url = "http://127.0.0.1:3001/multiplikation";
+                        break;
+                    case "division":
+                        var url = "http://127.0.0.1:3001/division";
+                        break;
+
+                }
                 // JSON Objekt
                 var data = {
-                    "value": button.checked,
-                    "id": button.id
+                    "numberOne": valueOne.value,
+                    "numberTwo": valueTwo.value
                 };
-                console.log(button.checked,button.id);
                 // POST-Request
                 $.ajax(url, {
                     data: JSON.stringify(data),
@@ -26,42 +39,30 @@
                 }).fail(function(data, xhr){
                     // wenn etwas failed error ausgeben
                     console.log(xhr);
-                    document.getElementById("headingOne").innerHTML = "Something went wrong check console output for details";
-                }).done(function(){
+                    alert("Division durch Null nicht möglich!");
+                }).done(function(data){
                     // sonst alles gut
-                    document.getElementById("headingOne").innerHTML = "";
+                    var json = JSON.parse(data);
+                    var result = document.getElementById("result");
+                    result.value =  json.result;
                 })
                 
         }
-        // Funktion um per GET-Request etwas vom Backend abzurufen
-        function getSwitchStatus(){
-            // GET-Request senden mit Jquery
-            $.get("http://127.0.0.1:3001/getButtons", function(data){
-                try{
-                    // JSON Objeckt parsen
-                    var res = JSON.parse(data);
-                } catch(err){
-                    console.log("Error");
-                }
-                let button = document.getElementById(res.id);
-                // Button auf das bekommene value setzen
-                button.checked = res.value;
-            }).fail(function(data, xhr){
-                // wenn etwas failed error ausgeben
-                console.log(xhr);
-                document.getElementById("headingOne").innerHTML = "Something went wrong check console output for details";
-            }).done(function(){
-                // sonst alles gut
-                document.getElementById("headingOne").innerHTML = "";
-            })
-        }
         </script>
     </head>
-    <body onload="getSwitchStatus()">
-        <!--Button Input übergibt der Funktion den Button mit this-->
-        <input type="checkbox" id="buttonOne" onclick="sendSwitchStatus(this)">
-        <label for="buttonOne">ButtonOne</label>
-        <br>
-        <!--Heading um etwas anzuzeigen-->
-        <h1 id="headingOne"></h1>
+    <body>
+        <label for="valueOne">Erste Zahl:</label>
+        <input type="number" id="valueOne"><br>
+        <label for="choose">Rechenart:</label>
+        <select id="choose">
+            <option value="addition">Plus</option>
+            <option value="subtraktion">Minus</option>
+            <option value="multiplikation">Mal</option>
+            <option value="division">Durch</option>
+        </select><br>
+        <label for="valueTwo">Zweite Zahl:</label>
+        <input type="number" id="valueTwo"><br>
+        <input type="button" onclick="calculate();" value="Rechnen"><br>
+        <label for="result">Ergebnis:</label>
+        <input type="number" id="result">
     </body>
